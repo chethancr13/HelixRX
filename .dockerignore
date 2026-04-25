@@ -1,0 +1,10 @@
+.git
+.gitignore
+.firebase
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.env
+TEST_REPORT.html

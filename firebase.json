@@ -5,6 +5,29 @@
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "/api/**",
+        "run": {
+          "serviceId": "helixrx-api",
+          "region": "us-central1"
+        }
+      },
+      {
+        "source": "/generate-report",
+        "run": {
+          "serviceId": "helixrx-api",
+          "region": "us-central1"
+        }
+      },
+      {
+        "source": "**",
+        "run": {
+          "serviceId": "helixrx-api",
+          "region": "us-central1"
+        }
+      }
     ]
   },
   "storage": {

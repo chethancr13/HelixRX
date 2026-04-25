@@ -2,8 +2,12 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
     match /vcf/{userId}/{fileName} {
-      allow read, write: if request.auth != null
-                         && request.auth.uid == userId;
+      // Firebase-only bootstrap mode:
+      // allow browser uploads without auth, but keep constraints tight.
+      allow read: if true;
+      allow write: if request.resource != null
+                   && request.resource.size <= 5 * 1024 * 1024
+                   && fileName.matches('.*\\.vcf$');
     }
   }
 }
