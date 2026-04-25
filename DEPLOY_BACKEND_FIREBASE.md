@@ -24,6 +24,14 @@ gcloud run services update helixrx-api \
   --set-env-vars GOOGLE_API_KEY=YOUR_KEY
 ```
 
+Enable BigQuery metadata logging:
+
+```bash
+gcloud run services update helixrx-api \
+  --region us-central1 \
+  --set-env-vars ENABLE_BIGQUERY_LOGGING=true,BIGQUERY_PROJECT_ID=helixrx-bff6c,BIGQUERY_DATASET=helixrx_analytics,BIGQUERY_TABLE=analysis_metadata,BIGQUERY_AUTO_CREATE=true
+```
+
 ## 2) Deploy Firebase Hosting rewrites
 
 `firebase.json` already includes rewrite rules for `/api/**` and `/generate-report` to service `helixrx-api` in `us-central1`.

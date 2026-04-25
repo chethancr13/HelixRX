@@ -44,12 +44,21 @@ window.uploadVCF = async function () {
     status.innerText = "Uploading...";
 
     const userId = "user123"; // temp (we'll fix later)
-    const storageRef = ref(storage, `vcf/${userId}/${file.name}`);
+    const timestamp = Date.now();
+    const randomSuffix = Math.random().toString(36).slice(2, 8);
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const storagePath = `vcf/${userId}/${timestamp}-${randomSuffix}-${safeName}`;
+    const storageRef = ref(storage, storagePath);
 
-    await uploadBytes(storageRef, file);
+    await uploadBytes(storageRef, file, {
+      customMetadata: {
+        originalName: file.name,
+        uploadedAt: new Date().toISOString()
+      }
+    });
 
     status.innerText = "✅ Upload successful!";
-    console.log("File uploaded");
+    console.log("File uploaded to:", storagePath);
 
   } catch (error) {
     console.error(error);

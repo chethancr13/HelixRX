@@ -6,10 +6,13 @@ from services.drug_gene_matcher import match_drug_with_vcf
 from services.phenotype_engine import determine_phenotype
 from services.response_builder import build_response_json, prepare_llm_prompt, format_response_for_json_output
 from services.llm_service import get_llm_provider
+from services.bigquery_logger import BigQueryLogger
 import os
 from dotenv import load_dotenv
 from datetime import datetime
 import json
+import time
+import uuid
 
 # Load environment variables from .env file
 load_dotenv()
@@ -41,6 +44,24 @@ try:
 except Exception as e:
     print(f"⚠ Warning: Could not initialize LLM provider - {e}")
     print("LLM features will be disabled. Set GOOGLE_API_KEY environment variable to enable.")
+
+# Initialize BigQuery logger (optional, non-blocking)
+BIGQUERY_LOGGER = None
+try:
+    enable_bq_logging = os.getenv("ENABLE_BIGQUERY_LOGGING", "false").lower() in ["1", "true", "yes"]
+    if enable_bq_logging:
+        BIGQUERY_LOGGER = BigQueryLogger(
+            project_id=os.getenv("BIGQUERY_PROJECT_ID") or None,
+            dataset_id=os.getenv("BIGQUERY_DATASET", "helixrx_analytics"),
+            table_id=os.getenv("BIGQUERY_TABLE", "analysis_metadata"),
+            auto_create=os.getenv("BIGQUERY_AUTO_CREATE", "false").lower() in ["1", "true", "yes"]
+        )
+        print("✓ BigQuery logging enabled")
+    else:
+        print("ℹ BigQuery logging disabled. Set ENABLE_BIGQUERY_LOGGING=true to enable.")
+except Exception as e:
+    print(f"⚠ Warning: Could not initialize BigQuery logger - {e}")
+    print("BigQuery logging will be disabled.")
 
 
 @app.route('/')
@@ -208,18 +229,73 @@ def api_analysis():
     API endpoint that returns structured JSON responses for VCF analysis.
     This endpoint is designed for programmatic access and LLM integration.
     """
+    request_started_at = time.time()
+    request_id = request.headers.get("X-Request-Id") or str(uuid.uuid4())
+
+    def log_api_metadata(status, http_status, error_message=None, analyses=None, patient_id=None, drugs=None, request_metadata=None):
+        if not BIGQUERY_LOGGER:
+            return
+
+        try:
+            duration_ms = int((time.time() - request_started_at) * 1000)
+            response_metadata = {}
+            if analyses:
+                response_metadata = {
+                    "cpic_levels": sorted(list({a.get("cpic_evidence_level") for a in analyses if a.get("cpic_evidence_level")})),
+                    "risk_labels": sorted(list({a.get("risk_assessment", {}).get("risk_label") for a in analyses if a.get("risk_assessment", {}).get("risk_label")})),
+                    "drugs_processed": [a.get("drug") for a in analyses if a.get("drug")]
+                }
+
+            BIGQUERY_LOGGER.log_analysis_event({
+                "event_id": str(uuid.uuid4()),
+                "request_id": request_id,
+                "endpoint": "/api/analysis",
+                "status": status,
+                "http_status": http_status,
+                "error_message": error_message,
+                "duration_ms": duration_ms,
+                "client_ip": request.headers.get("X-Forwarded-For", request.remote_addr),
+                "user_agent": request.headers.get("User-Agent"),
+                "patient_id": patient_id,
+                "drugs": ",".join(drugs) if drugs else None,
+                "analysis_count": len(analyses) if analyses else 0,
+                "llm_enabled": bool(LLM_PROVIDER),
+                "llm_provider": "gemini",
+                "request_metadata": request_metadata or {},
+                "response_metadata": response_metadata,
+            })
+        except Exception as e:
+            # Logging should never block API responses.
+            print(f"⚠ BigQuery logging error: {e}")
+
     try:
         # Get uploaded VCF file
         if 'vcf_file' not in request.files:
+            log_api_metadata(
+                status="validation_error",
+                http_status=400,
+                error_message="No VCF file provided"
+            )
             return jsonify({"error": "No VCF file provided"}), 400
         
         vcf_file = request.files['vcf_file']
         if vcf_file.filename == '':
+            log_api_metadata(
+                status="validation_error",
+                http_status=400,
+                error_message="No VCF file selected"
+            )
             return jsonify({"error": "No VCF file selected"}), 400
         
         # Get drug input
         drugs_input = request.form.get('drugs', '')
         if not drugs_input:
+            log_api_metadata(
+                status="validation_error",
+                http_status=400,
+                error_message="No drugs provided",
+                request_metadata={"filename": vcf_file.filename}
+            )
             return jsonify({"error": "No drugs provided"}), 400
         
         # Parse VCF file
@@ -227,6 +303,15 @@ def api_analysis():
         print(f"VCF Parse Result: {vcf_data.get('vcf_parsing_success')}")
         
         if not vcf_data.get('vcf_parsing_success'):
+            log_api_metadata(
+                status="parse_error",
+                http_status=400,
+                error_message=vcf_data.get('error', 'Unknown error'),
+                request_metadata={
+                    "filename": vcf_file.filename,
+                    "drugs_input": drugs_input
+                }
+            )
             return jsonify({
                 "error": "VCF parsing failed",
                 "details": vcf_data.get('error', 'Unknown error')
@@ -384,15 +469,36 @@ Remember: Write for a patient with no medical background. Be supportive, encoura
         
         print(f"\nTotal responses: {len(json_responses)}")
         
-        return jsonify({
+        response_payload = {
             "total_analyses": len(json_responses),
             "analyses": json_responses
-        }), 200
+        }
+
+        log_api_metadata(
+            status="success",
+            http_status=200,
+            analyses=json_responses,
+            patient_id=vcf_data.get('patient_id'),
+            drugs=drug_list,
+            request_metadata={
+                "filename": vcf_file.filename,
+                "drugs_input": drugs_input,
+                "variant_gene_count": len(vcf_data.get('variants', {})),
+                "vcf_parsing_success": bool(vcf_data.get('vcf_parsing_success'))
+            }
+        )
+
+        return jsonify(response_payload), 200
     
     except Exception as e:
         print(f"Unexpected error in /api/analysis: {str(e)}")
         import traceback
         traceback.print_exc()
+        log_api_metadata(
+            status="server_error",
+            http_status=500,
+            error_message=str(e)
+        )
         return jsonify({
             "error": "Analysis error",
             "details": str(e)

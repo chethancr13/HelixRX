@@ -5,7 +5,9 @@ service firebase.storage {
       // Firebase-only bootstrap mode:
       // allow browser uploads without auth, but keep constraints tight.
       allow read: if true;
-      allow write: if request.resource != null
+      // resource == null ensures create-only (no overwrite at same object path).
+      allow write: if resource == null
+                   && request.resource != null
                    && request.resource.size <= 5 * 1024 * 1024
                    && fileName.matches('.*\\.vcf$');
     }

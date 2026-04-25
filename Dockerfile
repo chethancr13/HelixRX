@@ -12,4 +12,4 @@ COPY . .
 
 ENV PORT=8080
 
-CMD ["sh", "-c", "gunicorn --bind :$PORT --workers 2 --timeout 120 app:app"]
+CMD ["sh", "-c", "gunicorn --bind :$PORT --workers 1 --threads 4 --timeout 180 app:app"]
