@@ -11,6 +11,8 @@ const appState = {
     patientId: null
 };
 
+let helixLoaderOverlay = null;
+
 // ===========================
 // DOM Elements
 // ===========================
@@ -364,6 +366,7 @@ function validateInputs() {
 
 function setLoadingState(loading) {
     if (loading) {
+        showHelixLoader();
         elements.runButton.disabled = true;
         elements.runButton.innerHTML = `
             <i class="fa-solid fa-spinner fa-spin"></i>
@@ -371,6 +374,7 @@ function setLoadingState(loading) {
         `;
         elements.runButton.classList.add('opacity-75', 'cursor-not-allowed');
     } else {
+        hideHelixLoader();
         elements.runButton.disabled = false;
         elements.runButton.innerHTML = `
             <i class="fa-regular fa-circle-play"></i>
@@ -378,6 +382,133 @@ function setLoadingState(loading) {
         `;
         elements.runButton.classList.remove('opacity-75', 'cursor-not-allowed');
     }
+}
+
+function ensureHelixLoader() {
+    if (helixLoaderOverlay) {
+        return;
+    }
+
+    if (!document.getElementById('helix-loader-style')) {
+        const style = document.createElement('style');
+        style.id = 'helix-loader-style';
+        style.textContent = `
+            .helix-loader-overlay {
+                position: fixed;
+                inset: 0;
+                z-index: 9999;
+                background: radial-gradient(circle at 20% 20%, rgba(30, 64, 175, 0.25), rgba(15, 23, 42, 0.92));
+                backdrop-filter: blur(4px);
+                display: none;
+                align-items: center;
+                justify-content: center;
+                padding: 1rem;
+            }
+            .helix-loader-overlay.is-visible {
+                display: flex;
+            }
+            .helix-loader-card {
+                width: min(92vw, 460px);
+                background: rgba(15, 23, 42, 0.9);
+                border: 1px solid rgba(59, 130, 246, 0.35);
+                box-shadow: 0 18px 60px rgba(2, 6, 23, 0.65);
+                border-radius: 16px;
+                padding: 1.25rem;
+                color: #e5e7eb;
+                text-align: center;
+            }
+            .helix-loader-svg {
+                width: 160px;
+                height: 160px;
+                margin: 0 auto;
+                display: block;
+            }
+            .helix-loader-strand {
+                fill: none;
+                stroke-linecap: round;
+                stroke-width: 4;
+                stroke-dasharray: 12 10;
+                animation: helixFlow 1.6s linear infinite;
+            }
+            .helix-loader-rungs line {
+                stroke: rgba(148, 163, 184, 0.75);
+                stroke-width: 2.5;
+                animation: rungPulse 1.2s ease-in-out infinite;
+            }
+            .helix-loader-rungs line:nth-child(odd) {
+                animation-delay: 0.2s;
+            }
+            .helix-loader-rungs line:nth-child(3n) {
+                animation-delay: 0.45s;
+            }
+            .helix-loader-title {
+                margin-top: 0.5rem;
+                font-size: 0.95rem;
+                font-weight: 700;
+                letter-spacing: 0.08em;
+                color: #bfdbfe;
+                text-transform: uppercase;
+            }
+            .helix-loader-subtitle {
+                margin-top: 0.4rem;
+                font-size: 0.8rem;
+                color: #cbd5e1;
+            }
+            @keyframes helixFlow {
+                to {
+                    stroke-dashoffset: -44;
+                }
+            }
+            @keyframes rungPulse {
+                0%, 100% {
+                    opacity: 0.35;
+                }
+                50% {
+                    opacity: 1;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    helixLoaderOverlay = document.createElement('div');
+    helixLoaderOverlay.id = 'helix-loader-overlay';
+    helixLoaderOverlay.className = 'helix-loader-overlay';
+    helixLoaderOverlay.innerHTML = `
+        <div class="helix-loader-card" role="status" aria-live="polite" aria-label="Analyzing genomic data">
+            <svg class="helix-loader-svg" viewBox="0 0 180 180" aria-hidden="true" focusable="false">
+                <path class="helix-loader-strand" stroke="#38bdf8" d="M42 18 C118 38, 62 70, 138 90 C62 110, 118 142, 42 162" />
+                <path class="helix-loader-strand" stroke="#22d3ee" d="M138 18 C62 38, 118 70, 42 90 C118 110, 62 142, 138 162" />
+                <g class="helix-loader-rungs">
+                    <line x1="68" y1="30" x2="112" y2="30" />
+                    <line x1="57" y1="45" x2="123" y2="45" />
+                    <line x1="46" y1="60" x2="134" y2="60" />
+                    <line x1="57" y1="75" x2="123" y2="75" />
+                    <line x1="68" y1="90" x2="112" y2="90" />
+                    <line x1="57" y1="105" x2="123" y2="105" />
+                    <line x1="46" y1="120" x2="134" y2="120" />
+                    <line x1="57" y1="135" x2="123" y2="135" />
+                    <line x1="68" y1="150" x2="112" y2="150" />
+                </g>
+            </svg>
+            <p class="helix-loader-title">Decoding Genomic Helix</p>
+            <p class="helix-loader-subtitle">Cross-checking CPIC pathways and phenotype signals...</p>
+        </div>
+    `;
+
+    document.body.appendChild(helixLoaderOverlay);
+}
+
+function showHelixLoader() {
+    ensureHelixLoader();
+    helixLoaderOverlay.classList.add('is-visible');
+}
+
+function hideHelixLoader() {
+    if (!helixLoaderOverlay) {
+        return;
+    }
+    helixLoaderOverlay.classList.remove('is-visible');
 }
 
 function updateProgress(percent) {
