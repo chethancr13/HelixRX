@@ -1,4 +1,4 @@
-// PharmGuard Pro Terminal - Frontend Application
+// HelixRx Pro Terminal - Frontend Application
 // Complete UI logic with backend integration
 
 // ===========================
@@ -787,7 +787,7 @@ function initJsonExport() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `pharmguard-analysis-${Date.now()}.json`;
+        a.download = `helixrx-analysis-${Date.now()}.json`;
         a.click();
         URL.revokeObjectURL(url);
         showToast('JSON downloaded');
@@ -842,7 +842,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initJsonExport();
     initViewToggle();
     
-    console.log('PharmGuard Pro Terminal initialized');
+    console.log('HelixRx Pro Terminal initialized');
 });
 
 function initViewToggle() {
@@ -913,7 +913,7 @@ async function downloadReport() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `pharmguard-report-${patientId}-${Date.now()}.html`;
+        a.download = `helixrx-report-${patientId}-${Date.now()}.html`;
         a.click();
         URL.revokeObjectURL(url);
         
