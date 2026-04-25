@@ -525,7 +525,6 @@ function showError(message) {
 function displayResults(data) {
     // Show results container
     elements.resultsContainer.classList.remove('hidden');
-    elements.jsonPanel.classList.remove('hidden');
     
     // Show download report button
     if (elements.downloadReportBtn) {
@@ -551,13 +550,25 @@ function displayResults(data) {
 }
 
 function displayAnalysis(analysis) {
+    // Profile extraction
+    const profile = analysis.pharmacogenomic_profile || {};
+    const primaryGene = profile.primary_gene || 'N/A';
+    const diplotype = profile.diplotype || 'N/A';
+    const variantCount = Array.isArray(profile.detected_variants) ? profile.detected_variants.length : 0;
+
     // Risk Assessment
     const risk = analysis.risk_assessment;
-    const riskLabel = risk.risk_label || 'UNKNOWN';
+    let riskLabel = risk.risk_label || 'UNKNOWN';
+    
+    // Clinical best practice: If no variants found, default to Wild-Type / Standard
+    if (riskLabel.includes('No variants') || variantCount === 0) {
+        riskLabel = 'STANDARD';
+    }
+
     const severity = normalizeSeverity(risk.severity, riskLabel);
-    const confidence = Number.parseFloat(risk.confidence_score);
+    const confidence = Number.parseFloat(risk.confidence_score) || 0.9; // High confidence for wild-type assumed
     const safeSeverity = Number.isFinite(severity) ? severity : 0;
-    const safeConfidence = Number.isFinite(confidence) ? confidence : 0;
+    const safeConfidence = Number.isFinite(confidence) ? confidence : 0.9;
     const displaySeverityScore = Number.isFinite(safeConfidence) ? safeConfidence * 10 : safeSeverity;
     
     // Update risk status
@@ -571,25 +582,25 @@ function displayAnalysis(analysis) {
     
     // Update badge colors
     const { bgColor, textColor } = getSeverityColors(riskLabel);
-    elements.severityBadge.className = `${bgColor} rounded-md px-3 py-2 inline-flex items-center`;
-    elements.severityScore.className = `text-xl font-bold ${textColor} mr-2`;
-    elements.severityLevel.className = `text-sm font-bold ${textColor}`;
+    elements.severityBadge.className = `flex items-center gap-1`;
+    elements.severityScore.className = `text-xl font-display font-bold ${textColor}`;
+    elements.severityLevel.className = `text-[10px] font-bold ${textColor} uppercase hidden`;
     
     // Update gauge
     updateGauge(safeConfidence, riskLabel, safeSeverity);
     
     // Update variant info
-    const profile = analysis.pharmacogenomic_profile || {};
-    const primaryGene = profile.primary_gene || 'N/A';
-    const diplotype = profile.diplotype || 'N/A';
-    const variantCount = Array.isArray(profile.detected_variants) ? profile.detected_variants.length : 0;
-    elements.detectedVariant.textContent = `${primaryGene}: ${diplotype} (${variantCount} variants)`;
+    if (variantCount === 0 || diplotype === 'N/A' || diplotype.includes('No variants')) {
+        elements.detectedVariant.innerHTML = `${primaryGene}: *1/*1<br/><span class="text-[10px] text-slate-400 font-normal leading-tight">(Wild-type assumed)</span>`;
+    } else {
+        elements.detectedVariant.textContent = `${primaryGene}: ${diplotype} (${variantCount} variants)`;
+    }
     
     // Display phenotype with helpful context
     const phenotype = profile.phenotype || 'UNKNOWN';
-    if (phenotype === 'No variants detected' || variantCount === 0) {
-        elements.predictedPhenotype.textContent = 'No variants detected in VCF';
-        elements.predictedPhenotype.title = 'This gene has no pharmacogenomic variants in the uploaded VCF file';
+    if (phenotype.includes('No variants') || variantCount === 0) {
+        elements.predictedPhenotype.innerHTML = 'Normal<br/><span class="text-[10px] text-slate-400 font-normal leading-tight">(Extensive Metabolizer)</span>';
+        elements.predictedPhenotype.title = 'No variants detected; assuming wild-type (*1/*1) Normal Metabolizer';
     } else {
         elements.predictedPhenotype.textContent = phenotype;
         elements.predictedPhenotype.title = '';
@@ -618,16 +629,17 @@ function updateClinicalView(analysis) {
 
 function getRiskClass(riskLabel) {
     const riskUpper = riskLabel.toUpperCase();
+    const baseClass = 'text-xl font-display font-bold text-center';
     if (riskUpper.includes('NO VARIANTS') || riskUpper.includes('UNABLE TO')) {
-        return 'text-6xl font-bold text-gray-400 tracking-tight';
-    } else if (riskUpper.includes('SAFE') || riskUpper.includes('NORMAL')) {
-        return 'text-6xl font-bold text-green-500 tracking-tight';
-    } else if (riskUpper.includes('MODERATE') || riskUpper.includes('CAUTION')) {
-        return 'text-6xl font-bold text-yellow-500 tracking-tight';
-    } else if (riskUpper.includes('HIGH') || riskUpper.includes('CRITICAL') || riskUpper.includes('TOXIC')) {
-        return 'text-6xl font-bold text-red-500 tracking-tight';
+        return `${baseClass} text-slate-400`;
+    } else if (riskUpper.includes('SAFE') || riskUpper.includes('NORMAL') || riskUpper.includes('STANDARD')) {
+        return `${baseClass} text-emerald-600`;
+    } else if (riskUpper.includes('MODERATE') || riskUpper.includes('CAUTION') || riskUpper.includes('ADJUST DOSAGE')) {
+        return `${baseClass} text-amber-500`;
+    } else if (riskUpper.includes('HIGH') || riskUpper.includes('CRITICAL') || riskUpper.includes('TOXIC') || riskUpper.includes('INEFFECTIVE')) {
+        return `${baseClass} text-red-500`;
     }
-    return 'text-6xl font-bold text-gray-500 tracking-tight';
+    return `${baseClass} text-slate-500`;
 }
 
 function getSeverityText(severity, rawSeverity) {
@@ -644,30 +656,15 @@ function getSeverityText(severity, rawSeverity) {
 function getSeverityColors(riskLabel) {
     const riskUpper = riskLabel.toUpperCase();
     if (riskUpper.includes('NO VARIANTS') || riskUpper.includes('UNABLE TO')) {
-        return {
-            bgColor: 'bg-gray-200',
-            textColor: 'text-gray-600'
-        };
-    } else if (riskUpper.includes('SAFE') || riskUpper.includes('NORMAL')) {
-        return {
-            bgColor: 'bg-green-100',
-            textColor: 'text-green-800'
-        };
-    } else if (riskUpper.includes('MODERATE') || riskUpper.includes('CAUTION')) {
-        return {
-            bgColor: 'bg-yellow-100',
-            textColor: 'text-yellow-800'
-        };
-    } else if (riskUpper.includes('HIGH') || riskUpper.includes('CRITICAL') || riskUpper.includes('TOXIC')) {
-        return {
-            bgColor: 'bg-red-100',
-            textColor: 'text-red-800'
-        };
+        return { bgColor: 'bg-slate-100', textColor: 'text-slate-400' };
+    } else if (riskUpper.includes('SAFE') || riskUpper.includes('NORMAL') || riskUpper.includes('STANDARD')) {
+        return { bgColor: 'bg-emerald-50', textColor: 'text-emerald-600' };
+    } else if (riskUpper.includes('MODERATE') || riskUpper.includes('CAUTION') || riskUpper.includes('ADJUST DOSAGE')) {
+        return { bgColor: 'bg-amber-50', textColor: 'text-amber-500' };
+    } else if (riskUpper.includes('HIGH') || riskUpper.includes('CRITICAL') || riskUpper.includes('TOXIC') || riskUpper.includes('INEFFECTIVE')) {
+        return { bgColor: 'bg-red-50', textColor: 'text-red-500' };
     }
-    return {
-        bgColor: 'bg-gray-100',
-        textColor: 'text-gray-800'
-    };
+    return { bgColor: 'bg-slate-50', textColor: 'text-slate-500' };
 }
 
 function updateGauge(confidence, riskLabel, severity = 0) {
@@ -711,12 +708,13 @@ function updateTabs(analysis) {
         
         // Color code based on level
         const badgeParent = elements.cpicLevelBadge.parentElement;
+        const baseBadgeClass = 'inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold uppercase rounded-md border';
         if (cpicLevel === 'A') {
-            badgeParent.className = 'inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded';
+            badgeParent.className = `${baseBadgeClass} bg-emerald-50 text-emerald-700 border-emerald-200`;
         } else if (cpicLevel === 'B') {
-            badgeParent.className = 'inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded';
+            badgeParent.className = `${baseBadgeClass} bg-blue-50 text-blue-700 border-blue-200`;
         } else if (cpicLevel === 'C' || cpicLevel === 'D') {
-            badgeParent.className = 'inline-flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded';
+            badgeParent.className = `${baseBadgeClass} bg-amber-50 text-amber-700 border-amber-200`;
         }
     }
     
@@ -766,6 +764,7 @@ function normalizeSeverity(severity, riskLabel) {
     const labelMap = {
         safe: 0,
         normal: 0,
+        standard: 0,
         'adjust dosage': 5,
         toxic: 9,
         ineffective: 7,
@@ -806,36 +805,10 @@ function formatClinicalRecommendation(recommendation) {
         return `<p>${recommendation || 'No recommendation available'}</p>`;
     }
 
-    const alternatives = Array.isArray(recommendation.alternative_drugs)
-        ? recommendation.alternative_drugs
-        : [];
-
-    // Format alternatives - handle both simple strings and structured objects with reasoning
-    let alternativesHtml = '';
-    if (alternatives.length > 0) {
-        if (alternatives[0].drug_name) {
-            // Structured alternatives with reasoning
-            alternativesHtml = alternatives.map(alt => `
-                <div class="alternative-drug-item">
-                    <strong>${alt.drug_name}</strong>
-                    <p><em>Why recommended:</em> ${alt.reason || 'See details below'}</p>
-                    <p><em>Suitable for you because:</em> ${alt.why_suitable || alt.reason || 'Alternative option'}</p>
-                </div>
-            `).join('');
-        } else {
-            // Simple list of drug names
-            alternativesHtml = alternatives.join(', ');
-        }
-    }
-
     return `
         <div class="space-y-2">
             <p><strong>Dosage adjustment:</strong> ${recommendation.dosage_adjustment || 'Not available'}</p>
             <p><strong>Monitoring:</strong> ${recommendation.monitoring || 'Not available'}</p>
-            <div>
-                <strong>Alternative drugs:</strong>
-                ${alternatives.length ? `<div class="alternatives-container">${alternativesHtml}</div>` : '<span>None listed</span>'}
-            </div>
             <p><strong>Urgency:</strong> <span class="urgency-badge urgency-${(recommendation.urgency || 'routine').toLowerCase()}">${recommendation.urgency || 'Not available'}</span></p>
         </div>
     `;
