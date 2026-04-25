@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pharmacogenomic Analysis Report</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        background-color: #f9fafb;
+      }
+
+      .report-container {
+        max-width: 900px;
+        margin: 0 auto;
+        background-color: white;
+        padding: 40px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      .report-header {
+        border-bottom: 3px solid #0ea5e9;
+        padding-bottom: 30px;
+        margin-bottom: 30px;
+        text-align: center;
+      }
+
+      .report-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 10px;
+      }
+
+      .report-subtitle {
+        font-size: 14px;
+        color: #64748b;
+        margin-bottom: 5px;
+      }
+
+      .report-date {
+        font-size: 12px;
+        color: #94a3b8;
+        margin-top: 10px;
+      }
+
+      .patient-info {
+        background-color: #f0f9ff;
+        border-left: 4px solid #0ea5e9;
+        padding: 20px;
+        margin-bottom: 30px;
+        border-radius: 4px;
+      }
+
+      .patient-info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #e0f2fe;
+      }
+
+      .patient-info-row:last-child {
+        border-bottom: none;
+      }
+
+      .patient-info-label {
+        font-weight: 600;
+        color: #0369a1;
+        min-width: 150px;
+      }
+
+      .patient-info-value {
+        color: #1e293b;
+      }
+
+      .analysis-section {
+        margin-bottom: 40px;
+        page-break-inside: avoid;
+      }
+
+      .section-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1e293b;
+        border-bottom: 2px solid #94a3b8;
+        padding-bottom: 12px;
+        margin-bottom: 20px;
+      }
+
+      .drug-analysis {
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+
+      .drug-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #cbd5e1;
+      }
+
+      .drug-name {
+        font-size: 16px;
+        font-weight: 700;
+        color: #0369a1;
+      }
+
+      .risk-badge {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      .risk-safe {
+        background-color: #dcfce7;
+        color: #166534;
+      }
+
+      .risk-adjust,
+      .risk-adjust-dosage {
+        background-color: #fef3c7;
+        color: #92400e;
+      }
+
+      .risk-toxic {
+        background-color: #fee2e2;
+        color: #991b1b;
+      }
+
+      .risk-ineffective {
+        background-color: #fed7aa;
+        color: #9a3412;
+      }
+
+      .risk-unknown,
+      .risk-unable-to-determine,
+      .risk-no-variants-detected-in-vcf {
+        background-color: #f3f4f6;
+        color: #374151;
+      }
+
+      .analysis-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-bottom: 15px;
+      }
+
+      .analysis-item {
+        background-color: white;
+        padding: 12px;
+        border-radius: 4px;
+        border-left: 3px solid #0ea5e9;
+      }
+
+      .analysis-item-label {
+        font-size: 12px;
+        color: #64748b;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 5px;
+      }
+
+      .analysis-item-value {
+        font-size: 15px;
+        font-weight: 600;
+        color: #1e293b;
+      }
+
+      .recommendation-box {
+        background-color: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 4px;
+        padding: 15px;
+        margin-top: 15px;
+      }
+
+      .recommendation-title {
+        font-weight: 600;
+        color: #0369a1;
+        font-size: 14px;
+        margin-bottom: 10px;
+      }
+
+      .recommendation-item {
+        margin-bottom: 10px;
+        padding: 8px 0;
+        border-bottom: 1px solid #dbeafe;
+      }
+
+      .recommendation-item:last-child {
+        border-bottom: none;
+      }
+
+      .recommendation-label {
+        font-size: 12px;
+        color: #0369a1;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+
+      .recommendation-text {
+        font-size: 13px;
+        color: #1e293b;
+        line-height: 1.5;
+      }
+
+      .alternative-drugs {
+        background-color: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-radius: 4px;
+        padding: 15px;
+        margin-top: 15px;
+      }
+
+      .alternative-title {
+        font-weight: 600;
+        color: #166534;
+        font-size: 14px;
+        margin-bottom: 10px;
+      }
+
+      .alternative-drug {
+        background-color: white;
+        padding: 12px;
+        margin-bottom: 10px;
+        border-left: 3px solid #22c55e;
+        border-radius: 2px;
+        font-size: 13px;
+      }
+
+      .alternative-drug:last-child {
+        margin-bottom: 0;
+      }
+
+      .alternative-name {
+        font-weight: 600;
+        color: #166534;
+        margin-bottom: 4px;
+      }
+
+      .alternative-info {
+        color: #4b5563;
+        margin-bottom: 4px;
+      }
+
+      .explanation-section {
+        background-color: #faf5ff;
+        border: 1px solid #e9d5ff;
+        border-radius: 4px;
+        padding: 15px;
+        margin-top: 15px;
+        font-size: 13px;
+      }
+
+      .explanation-title {
+        font-weight: 600;
+        color: #6b21a8;
+        margin-bottom: 10px;
+      }
+
+      .summary-box {
+        background-color: #f3f4f6;
+        border-radius: 4px;
+        padding: 15px;
+        margin-bottom: 20px;
+      }
+
+      .summary-text {
+        color: #374151;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      .footer {
+        margin-top: 50px;
+        padding-top: 20px;
+        border-top: 2px solid #e2e8f0;
+        text-align: center;
+        color: #64748b;
+        font-size: 12px;
+      }
+
+      .footer-note {
+        margin-bottom: 10px;
+      }
+
+      .footer-disclaimer {
+        background-color: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 4px;
+        padding: 15px;
+        margin-top: 20px;
+        font-size: 12px;
+        color: #7f1d1d;
+        line-height: 1.6;
+      }
+
+      @media print {
+        body {
+          background-color: white;
+        }
+
+        .report-container {
+          box-shadow: none;
+          max-width: 100%;
+          padding: 0;
+        }
+
+        .analysis-section {
+          page-break-inside: avoid;
+        }
+
+        .drug-analysis {
+          page-break-inside: avoid;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="report-container">
+      <!-- Report Header -->
+      <div class="report-header">
+        <div class="report-title">Pharmacogenomic Analysis Report</div>
+        <div class="report-subtitle">
+          PharmaGuard - Precision Medicine Platform
+        </div>
+        <div class="report-date">Generated on {{ timestamp }}</div>
+      </div>
+
+      <!-- Patient Information -->
+      <div class="patient-info">
+        <div class="patient-info-row">
+          <span class="patient-info-label">Patient ID:</span>
+          <span class="patient-info-value">{{ patient_id }}</span>
+        </div>
+        <div class="patient-info-row">
+          <span class="patient-info-label">Analysis Date:</span>
+          <span class="patient-info-value">{{ analysis_date }}</span>
+        </div>
+        <div class="patient-info-row">
+          <span class="patient-info-label">Total Drugs Analyzed:</span>
+          <span class="patient-info-value">{{ analyses|length }}</span>
+        </div>
+      </div>
+
+      <!-- Executive Summary -->
+      {% if analyses|length > 0 %}
+      <div class="analysis-section">
+        <div class="section-title">Executive Summary</div>
+        <div class="summary-box">
+          <div class="summary-text">
+            This report presents a comprehensive pharmacogenomic analysis of {{
+            analyses|length }} medication(s) based on the patient's genetic
+            profile. The analysis identifies potential drug-gene interactions
+            and provides personalized recommendations for dosage adjustments,
+            alternative medications, and monitoring strategies.
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Drug-Specific Analyses -->
+      <div class="analysis-section">
+        <div class="section-title">Detailed Drug Analysis</div>
+
+        {% for analysis in analyses %}
+        <div class="drug-analysis">
+          <!-- Drug Header -->
+          <div class="drug-header">
+            <span class="drug-name">{{ analysis.drug or 'Unknown Drug' }}</span>
+            <span
+              class="risk-badge risk-{{ (analysis.risk_assessment.risk_label or 'unknown')|lower|replace(' ', '-') }}"
+            >
+              {{ analysis.risk_assessment.risk_label or 'Unknown' }}
+            </span>
+          </div>
+
+          <!-- Analysis Grid -->
+          <div class="analysis-grid">
+            <div class="analysis-item">
+              <div class="analysis-item-label">Primary Gene</div>
+              <div class="analysis-item-value">
+                {{ analysis.pharmacogenomic_profile.primary_gene or 'N/A' }}
+              </div>
+            </div>
+            <div class="analysis-item">
+              <div class="analysis-item-label">Diplotype</div>
+              <div class="analysis-item-value">
+                {{ analysis.pharmacogenomic_profile.diplotype or 'N/A' }}
+              </div>
+            </div>
+            <div class="analysis-item">
+              <div class="analysis-item-label">Phenotype</div>
+              <div class="analysis-item-value">
+                {{ analysis.pharmacogenomic_profile.phenotype or 'Unknown' }}
+              </div>
+            </div>
+            <div class="analysis-item">
+              <div class="analysis-item-label">Variants Detected</div>
+              <div class="analysis-item-value">
+                {{ analysis.pharmacogenomic_profile.detected_variants|length }}
+              </div>
+            </div>
+            <div class="analysis-item">
+              <div class="analysis-item-label">Severity Score</div>
+              <div class="analysis-item-value">
+                {{ analysis.risk_assessment.severity or 'N/A' }}
+              </div>
+            </div>
+            <div class="analysis-item">
+              <div class="analysis-item-label">Evidence Level</div>
+              <div class="analysis-item-value">
+                {{ analysis.cpic_evidence_level or 'N/A' }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Clinical Recommendation -->
+          <div class="recommendation-box">
+            <div class="recommendation-title">Clinical Recommendation</div>
+
+            <div class="recommendation-item">
+              <div class="recommendation-label">Dosage Adjustment:</div>
+              <div class="recommendation-text">
+                {{ analysis.clinical_recommendation.dosage_adjustment or
+                'Standard dosing' }}
+              </div>
+            </div>
+
+            <div class="recommendation-item">
+              <div class="recommendation-label">Monitoring:</div>
+              <div class="recommendation-text">
+                {{ analysis.clinical_recommendation.monitoring or 'Standard
+                monitoring' }}
+              </div>
+            </div>
+
+            <div class="recommendation-item">
+              <div class="recommendation-label">Urgency:</div>
+              <div
+                class="recommendation-text"
+                style="text-transform: capitalize"
+              >
+                {{ analysis.clinical_recommendation.urgency or 'routine' }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Alternative Drugs -->
+          {% if analysis.clinical_recommendation.alternative_drugs and
+          analysis.clinical_recommendation.alternative_drugs|length > 0 %}
+          <div class="alternative-drugs">
+            <div class="alternative-title">Alternative Medications</div>
+            {% for alt in analysis.clinical_recommendation.alternative_drugs %}
+            <div class="alternative-drug">
+              <div class="alternative-name">
+                💊 {{ alt.drug_name if alt.drug_name is defined else alt }}
+              </div>
+              {% if alt.reason is defined %}
+              <div class="alternative-info">
+                <strong>Why:</strong> {{ alt.reason }}
+              </div>
+              <div class="alternative-info">
+                <strong>Suitable for:</strong> {{ alt.why_suitable }}
+              </div>
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          <!-- LLM Explanation -->
+          {% if analysis.llm_generated_explanation %}
+          <div class="explanation-section">
+            <div class="explanation-title">Detailed Explanation</div>
+
+            {% if analysis.llm_generated_explanation.summary %}
+            <div style="margin-bottom: 10px">
+              <strong style="color: #6b21a8">Summary:</strong>
+              <div style="color: #4c1d95; margin-top: 4px">
+                {{ analysis.llm_generated_explanation.summary }}
+              </div>
+            </div>
+            {% endif %} {% if analysis.llm_generated_explanation.mechanism %}
+            <div style="margin-bottom: 10px">
+              <strong style="color: #6b21a8">Genetic Mechanism:</strong>
+              <div style="color: #4c1d95; margin-top: 4px">
+                {{ analysis.llm_generated_explanation.mechanism }}
+              </div>
+            </div>
+            {% endif %} {% if
+            analysis.llm_generated_explanation.interaction_notes %}
+            <div style="margin-bottom: 10px">
+              <strong style="color: #6b21a8">Important Notes:</strong>
+              <ul style="margin-top: 4px; margin-left: 20px; color: #4c1d95">
+                {% for note in
+                analysis.llm_generated_explanation.interaction_notes %}
+                <li>{{ note }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+            {% endif %}
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Clinical Guideline References -->
+      {% set has_guidelines = analyses|selectattr('guideline_url')|list %} {% if
+      has_guidelines|length > 0 %}
+      <div class="analysis-section">
+        <div class="section-title">Clinical Guideline References</div>
+        {% for analysis in analyses %} {% if analysis.guideline_url %}
+        <div
+          style="
+            margin-bottom: 12px;
+            padding: 12px;
+            background-color: #f0f9ff;
+            border-radius: 4px;
+          "
+        >
+          <strong style="color: #0369a1">{{ analysis.drug }}:</strong><br />
+          <a
+            href="{{ analysis.guideline_url }}"
+            style="color: #0284c7; text-decoration: none; word-break: break-all"
+          >
+            {{ analysis.guideline_url }}
+          </a>
+        </div>
+        {% endif %} {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- Footer -->
+      <div class="footer">
+        <div class="footer-note">
+          <strong>PharmaGuard Pharmacogenomic Analysis Report</strong>
+        </div>
+        <div class="footer-disclaimer">
+          <strong>⚠️ Important Disclaimer:</strong><br />
+          This report is generated for informational and educational purposes
+          only. It is not a substitute for professional medical advice,
+          diagnosis, or treatment. All recommendations should be discussed with
+          a qualified healthcare provider before making any medication changes.
+          Genetic testing results and pharmacogenomic analysis may vary based on
+          laboratory methodology and interpretation. Always consult with your
+          healthcare team before adjusting medications based on this analysis.
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

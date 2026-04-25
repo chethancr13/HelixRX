@@ -1,0 +1,74 @@
+=== REQUIRED SCHEMA ===
+{
+  "patient_id": "PATIENT_XXX",
+  "drug": "DRUG_NAME",
+  "timestamp": "ISO8601_timestamp",
+  "risk_assessment": {
+    "risk_label": "Safe|Adjust Dosage|Toxic|...",
+    "confidence_score": 0.0,
+    "severity": "none|low|moderate|high|critical"
+  },
+  "pharmacogenomic_profile": {
+    "primary_gene": "GENE_SYMBOL",
+    "diplotype": "*X/*Y",
+    "phenotype": "PM|IM|NM|RM|URM|Unknown",
+    "detected_variants": [
+      {
+        "rsid": "rsXXXX"
+      }
+    ]
+  },
+  "clinical_recommendation": {},
+  "llm_generated_explanation": {
+    "summary": "..."
+  },
+  "quality_metrics": {
+    "vcf_parsing_success": true
+  }
+}
+
+=== ACTUAL API OUTPUT (First Analysis) ===
+{
+  "clinical_recommendation": {
+    "alternative_drugs": "list",
+    "dosage_adjustment": "str",
+    "monitoring": "str",
+    "urgency": "str"
+  },
+  "drug": "str",
+  "guideline_url": "str",
+  "llm_generated_explanation": {
+    "evidence_basis": "str",
+    "interaction_notes": "list",
+    "mechanism": "str",
+    "summary": "str"
+  },
+  "patient_id": "str",
+  "pharmacogenomic_profile": {
+    "detected_variants": "list",
+    "diplotype": "str",
+    "phenotype": "str",
+    "primary_gene": "str"
+  },
+  "quality_metrics": {
+    "data_completeness": "str",
+    "variant_count": "int",
+    "vcf_parsing_success": "bool"
+  },
+  "risk_assessment": {
+    "confidence_score": "float",
+    "risk_label": "str",
+    "severity": "str"
+  },
+  "timestamp": "str"
+}
+
+=== FIELD COMPARISON ===
+Traceback (most recent call last):
+  File "C:\Users\shreyas m\Downloads\PharmaGuard_NullPoint\test_schema_compliance.py", line 53, in <module>
+    print(f"\u2705 Required fields present: {required_fields.intersection(actual_fields)}")
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python314\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2705' in position 0: character maps to <undefined>

@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: pharmaguard
+    env: python3
+    plan: free
+    
+    # Build and start commands
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    
+    # Python version
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: GUNICORN_WORKERS
+        value: 2
+      - key: PORT
+        value: 5000
+    
+    # Routes and health checks
+    routes:
+      - path: /
+        matchType: Prefix
+    
+    # Keep services running 24/7 (requires paid plan)
+    # Uncomment for production deployment
+    # autoDeploy: true

@@ -1,0 +1,734 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PharmGuard Pro Terminal - Genomic Analysis</title>
+    <!-- Tailwind CSS v3 with Plugins -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Font Awesome for Icons -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <!-- Google Fonts: Inter -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Inter", "sans-serif"],
+            },
+            colors: {
+              pharm: {
+                bg: "#f3f4f6",
+                primary: "#1d4ed8",
+                safe: "#22c55e",
+                error: "#ef4444",
+                dark: "#0f172a",
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      /* Custom Scrollbar */
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: #f1f1f1;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 3px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+      }
+
+      /* Hidden class */
+      .hidden {
+        display: none !important;
+      }
+
+      /* Gauge styles */
+      .gauge-arc {
+        transform-origin: 60px 60px;
+        transition: stroke-dashoffset 0.5s ease;
+      }
+    </style>
+  </head>
+  <body class="bg-pharm-bg text-gray-800 font-sans min-h-screen flex flex-col">
+    <!-- Header -->
+    <header
+      class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50 border-b-[3px] border-blue-800"
+    >
+      <div
+        class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between"
+      >
+        <!-- Logo -->
+        <div class="flex items-center gap-3">
+          <div
+            class="w-8 h-8 bg-black rounded flex items-center justify-center"
+          >
+            <i class="fa-solid fa-flask text-white text-sm"></i>
+          </div>
+          <h1
+            class="text-lg font-bold tracking-tight uppercase text-black font-black"
+          >
+            PHARMGUARD PRO TERMINAL
+          </h1>
+        </div>
+
+        <!-- Status Bar -->
+        <div
+          class="hidden md:flex items-center text-xs font-medium text-gray-500 tracking-wide gap-4"
+        >
+          <div class="flex items-center gap-1">
+            <span>SIMULATION BAR MODE:</span>
+            <span class="text-black font-bold">CLINICAL</span>
+          </div>
+          <div class="h-4 w-px bg-gray-300"></div>
+          <div class="flex items-center gap-1">
+            <span>SESSION ID:</span>
+            <span class="text-black font-bold" id="session-id">2843-BETA</span>
+          </div>
+          <div class="h-4 w-px bg-gray-300"></div>
+          <div class="flex items-center gap-1">
+            <span>STATUS:</span>
+            <span
+              class="w-2 h-2 rounded-full bg-green-500 mx-1 animate-pulse"
+            ></span>
+            <span class="text-green-600 font-bold">ACTIVE</span>
+          </div>
+          <div class="h-4 w-px bg-gray-300"></div>
+          <div class="flex items-center gap-1">
+            <span>SIMULATION PROGRESS:</span>
+            <span class="text-blue-600 font-bold" id="progress-percent"
+              >0%</span
+            >
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Privacy Notice Banner -->
+    <div class="bg-blue-50 border-b border-blue-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+        <div class="flex items-center gap-3 text-sm">
+          <i class="fa-solid fa-shield-halved text-blue-600"></i>
+          <p class="text-blue-900">
+            <strong>Privacy Protected:</strong> Your genetic data is processed
+            locally and never leaves your device.
+            <span class="text-blue-700"
+              >All analysis happens in your browser.</span
+            >
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+      <!-- Page Title -->
+      <div class="mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 uppercase">
+          Genomic Analysis
+        </h2>
+        <p class="text-gray-500 text-sm mt-1">
+          Configure parameters and review predictive risk models.
+        </p>
+      </div>
+
+      <!-- Layout Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Left Column (Input Parameters) -->
+        <div class="lg:col-span-5 flex flex-col gap-6">
+          <div
+            class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-auto flex flex-col h-full"
+          >
+            <!-- Card Header -->
+            <div
+              class="px-6 py-4 border-b border-gray-100 flex justify-between items-center"
+            >
+              <h3 class="font-semibold text-gray-900 text-lg">
+                Input Parameters
+              </h3>
+              <span class="text-xs text-gray-400 font-mono">CONFIG_V1.2</span>
+            </div>
+
+            <!-- Card Body -->
+            <div class="p-6 flex-grow space-y-8">
+              <!-- VCF Dropzone -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2"
+                  >Genomic Data Source</label
+                >
+                <div
+                  id="dropzone"
+                  class="border-2 border-dashed border-gray-300 bg-gray-50 rounded-lg p-8 text-center cursor-pointer hover:bg-gray-100 transition-colors flex flex-col items-center justify-center gap-3"
+                >
+                  <i
+                    class="fa-solid fa-cloud-arrow-up text-gray-400 text-3xl"
+                  ></i>
+                  <div>
+                    <h4 class="text-gray-900 font-bold text-sm uppercase mb-1">
+                      VCF DROPZONE
+                    </h4>
+                    <p class="text-xs text-gray-600">
+                      Drag and drop your .vcf file or click to browse.
+                    </p>
+                    <p class="text-xs text-gray-600 mt-1">
+                      Only .vcf files are accepted.
+                    </p>
+                  </div>
+                  <input
+                    type="file"
+                    id="vcf-file-input"
+                    accept=".vcf"
+                    class="hidden"
+                  />
+                </div>
+                <p
+                  id="vcf-error"
+                  class="text-xs text-red-600 mt-2 font-medium hidden"
+                >
+                  Error: Invalid file type. Please upload a .vcf file.
+                </p>
+                <p
+                  id="vcf-success"
+                  class="text-xs text-green-600 mt-2 font-medium hidden"
+                >
+                  <i class="fa-solid fa-check-circle"></i> File loaded
+                  successfully
+                </p>
+              </div>
+
+              <!-- Drug Selector -->
+              <div class="relative">
+                <label class="block text-sm font-medium text-gray-700 mb-2"
+                  >Drug Selector</label
+                >
+                <div
+                  id="drug-selector-box"
+                  class="w-full border border-gray-300 rounded px-3 py-2 bg-white flex items-center justify-between hover:border-gray-400 transition-colors"
+                >
+                  <div
+                    id="selected-drugs"
+                    class="flex gap-2 flex-wrap flex-1 items-center"
+                  >
+                    <input
+                      id="drug-input"
+                      type="text"
+                      class="flex-1 min-w-[140px] border-0 focus:ring-0 p-0 text-sm text-gray-700 placeholder:text-gray-400"
+                      placeholder="Type drug name..."
+                      autocomplete="off"
+                    />
+                  </div>
+                  <div class="flex items-center gap-2 text-gray-400">
+                    <i
+                      id="clear-all"
+                      class="fa-solid fa-xmark cursor-pointer hover:text-gray-600 hidden"
+                    ></i>
+                    <i class="fa-solid fa-chevron-down text-xs"></i>
+                  </div>
+                </div>
+                <p
+                  id="drug-error"
+                  class="text-xs text-red-600 mt-2 font-medium hidden"
+                >
+                  Error: At least one drug is required.
+                </p>
+
+                <!-- Dropdown Menu -->
+                <div
+                  id="drug-dropdown"
+                  class="hidden absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm custom-scrollbar overflow-auto"
+                >
+                  <ul class="divide-y divide-gray-100">
+                    <li
+                      class="drug-option text-gray-700 select-none relative py-2 pl-3 pr-9 hover:bg-gray-50 cursor-pointer"
+                      data-drug="CODEINE"
+                    >
+                      <span class="block truncate">CODEINE</span>
+                    </li>
+                    <li
+                      class="drug-option text-gray-700 select-none relative py-2 pl-3 pr-9 hover:bg-gray-50 cursor-pointer"
+                      data-drug="WARFARIN"
+                    >
+                      <span class="block truncate">WARFARIN</span>
+                    </li>
+                    <li
+                      class="drug-option text-gray-700 select-none relative py-2 pl-3 pr-9 hover:bg-gray-50 cursor-pointer"
+                      data-drug="CLOPIDOGREL"
+                    >
+                      <span class="block truncate">CLOPIDOGREL</span>
+                    </li>
+                    <li
+                      class="drug-option text-gray-700 select-none relative py-2 pl-3 pr-9 hover:bg-gray-50 cursor-pointer"
+                      data-drug="SIMVASTATIN"
+                    >
+                      <span class="block truncate">SIMVASTATIN</span>
+                    </li>
+                    <li
+                      class="drug-option text-gray-700 select-none relative py-2 pl-3 pr-9 hover:bg-gray-50 cursor-pointer"
+                      data-drug="AZATHIOPRINE"
+                    >
+                      <span class="block truncate">AZATHIOPRINE</span>
+                    </li>
+                    <li
+                      class="drug-option text-gray-700 select-none relative py-2 pl-3 pr-9 hover:bg-gray-50 cursor-pointer"
+                      data-drug="FLUOROURACIL"
+                    >
+                      <span class="block truncate">FLUOROURACIL</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- Run Button -->
+            <div class="p-6 pt-0 mt-auto">
+              <button
+                id="run-analysis-btn"
+                class="w-full bg-blue-700 hover:bg-blue-800 text-white font-semibold py-3 px-4 rounded shadow transition-colors flex items-center justify-center gap-2"
+              >
+                <i class="fa-regular fa-circle-play"></i>
+                <span>RUN GENOMIC ANALYSIS</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column (Results) -->
+        <div class="lg:col-span-7 flex flex-col gap-6">
+          <!-- Risk Profile Card -->
+          <div
+            id="results-container"
+            class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 relative hidden"
+          >
+            <!-- Card Header & Toggle -->
+            <div class="flex justify-between items-start mb-6 gap-3">
+              <div class="flex items-center gap-3">
+                <h3
+                  class="font-bold text-gray-800 text-sm uppercase tracking-wide"
+                >
+                  Risk Profile Assessment
+                </h3>
+                <select
+                  id="analysis-drug-select"
+                  class="hidden text-xs font-semibold uppercase tracking-wide border border-gray-200 rounded px-2 py-1 bg-white text-gray-700"
+                >
+                  <option value="">Select Drug</option>
+                </select>
+              </div>
+              <div class="flex gap-2 items-center">
+                <button
+                  id="download-report-btn"
+                  class="hidden bg-white hover:bg-gray-50 text-gray-800 font-semibold px-3 py-1 rounded text-xs shadow border border-gray-300 transition-colors flex items-center gap-1.5 uppercase tracking-wide"
+                  title="Download comprehensive analysis report as HTML"
+                >
+                  <i class="fa-solid fa-download text-xs"></i>
+                  <span>DOWNLOAD REPORT</span>
+                </button>
+                <div class="bg-gray-100 p-1 rounded-md inline-flex">
+                  <button
+                    id="toggle-genomic"
+                    class="bg-white shadow-sm px-3 py-1 rounded text-xs font-bold text-gray-800 uppercase tracking-wide"
+                  >
+                    Genomic
+                  </button>
+                  <button
+                    id="toggle-clinical"
+                    class="px-3 py-1 rounded text-xs font-medium text-gray-500 hover:text-gray-700 uppercase tracking-wide"
+                  >
+                    Clinical
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div id="genomic-view">
+              <!-- Main Stats Grid -->
+              <div class="flex flex-col md:flex-row gap-8 items-start mb-8">
+                <!-- Text Stats -->
+                <div class="flex-1 space-y-6">
+                  <div>
+                    <p
+                      class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1"
+                    >
+                      Composite Risk Status
+                    </p>
+                    <h2
+                      id="risk-status"
+                      class="text-6xl font-bold text-green-500 tracking-tight"
+                    >
+                      SAFE
+                    </h2>
+                  </div>
+                  <div>
+                    <p
+                      class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-2"
+                    >
+                      Predicted Severity Score
+                    </p>
+                    <div
+                      id="severity-badge"
+                      class="bg-green-100 rounded-md px-3 py-2 inline-flex items-center"
+                    >
+                      <span
+                        id="severity-score"
+                        class="text-xl font-bold text-green-800 mr-2"
+                        >0.0</span
+                      >
+                      <span
+                        id="severity-level"
+                        class="text-sm text-green-700 font-bold"
+                        >(NONE)</span
+                      >
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Gauge Chart -->
+                <div class="flex flex-col items-center justify-center pt-2">
+                  <svg width="120" height="80" viewBox="0 0 120 80">
+                    <!-- Background arc -->
+                    <path
+                      d="M 10 60 A 50 50 0 0 1 110 60"
+                      fill="none"
+                      stroke="#e5e7eb"
+                      stroke-width="12"
+                      stroke-linecap="round"
+                    />
+                    <!-- Progress arc -->
+                    <path
+                      id="gauge-arc"
+                      d="M 10 60 A 50 50 0 0 1 110 60"
+                      fill="none"
+                      stroke="#22c55e"
+                      stroke-width="12"
+                      stroke-linecap="round"
+                      stroke-dasharray="157"
+                      stroke-dashoffset="157"
+                    />
+                  </svg>
+                  <p
+                    class="text-[10px] text-gray-400 uppercase tracking-wider font-bold mt-2"
+                    id="risk-index-label"
+                  >
+                    RISK_INDEX_GAUGE
+                  </p>
+                </div>
+              </div>
+
+              <!-- Additional Info -->
+              <div class="space-y-3 text-sm border-t border-gray-100 pt-4">
+                <div class="flex justify-between">
+                  <span class="text-gray-500">Detected Variant</span>
+                  <span id="detected-variant" class="font-bold text-gray-900"
+                    >-</span
+                  >
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-500">Predicted Phenotype</span>
+                  <span
+                    id="predicted-phenotype"
+                    class="font-bold text-blue-600 uppercase"
+                    >-</span
+                  >
+                </div>
+              </div>
+
+              <!-- Tabs -->
+              <div class="mt-6 border-b border-gray-200">
+                <nav class="-mb-px flex gap-6">
+                  <button
+                    class="tab-button border-b-2 border-blue-600 py-2 px-1 text-sm font-medium text-blue-600"
+                    data-tab="profile"
+                  >
+                    Pharmacogenic Profile
+                  </button>
+                  <button
+                    class="tab-button border-b-2 border-transparent py-2 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    data-tab="recommendation"
+                  >
+                    Clinical Recommendation
+                  </button>
+                  <button
+                    class="tab-button border-b-2 border-transparent py-2 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    data-tab="explanation"
+                  >
+                    Clinical Explanation
+                  </button>
+                </nav>
+              </div>
+
+              <!-- Tab Content -->
+              <div class="mt-4">
+                <div id="tab-profile" class="tab-content">
+                  <div class="text-sm text-gray-700 space-y-3">
+                    <p>
+                      <strong>Metadata:</strong>
+                      <span id="metadata-text">Loading...</span>
+                    </p>
+
+                    <!-- Trust Indicators -->
+                    <div class="flex flex-wrap gap-2 py-2" id="trust-badges">
+                      <span
+                        class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded"
+                      >
+                        <i class="fa-solid fa-certificate"></i>
+                        <span id="cpic-level-badge">CPIC Level A</span>
+                      </span>
+                      <span
+                        class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded"
+                      >
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <span>FDA Recognized</span>
+                      </span>
+                      <span
+                        class="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-800 text-xs font-semibold rounded"
+                      >
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        <span id="guideline-updated">Updated: Jan 2026</span>
+                      </span>
+                    </div>
+
+                    <p>
+                      <strong>Citation:</strong>
+                      <a
+                        id="guideline-link"
+                        href="#"
+                        target="_blank"
+                        class="text-blue-600 hover:underline"
+                        >[Link to database]</a
+                      >
+                    </p>
+                  </div>
+                </div>
+                <div id="tab-recommendation" class="tab-content hidden">
+                  <div
+                    class="text-sm text-gray-700 space-y-3"
+                    id="recommendation-content"
+                  >
+                    <p>No data available</p>
+                  </div>
+                </div>
+                <div id="tab-explanation" class="tab-content hidden">
+                  <div
+                    class="text-sm text-gray-700 space-y-3"
+                    id="explanation-content"
+                  >
+                    <p>No data available</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="clinical-view" class="hidden">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-gray-50 border border-gray-100 rounded-lg p-4">
+                  <p
+                    class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1"
+                  >
+                    Clinical Risk
+                  </p>
+                  <p
+                    id="clinical-risk"
+                    class="text-2xl font-bold text-gray-900"
+                  >
+                    -
+                  </p>
+                  <p
+                    id="clinical-risk-detail"
+                    class="text-xs text-gray-500 mt-1"
+                  >
+                    -
+                  </p>
+                </div>
+                <div class="bg-gray-50 border border-gray-100 rounded-lg p-4">
+                  <p
+                    class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1"
+                  >
+                    Urgency
+                  </p>
+                  <p
+                    id="clinical-urgency"
+                    class="text-2xl font-bold text-gray-900"
+                  >
+                    -
+                  </p>
+                  <p class="text-xs text-gray-500 mt-1">
+                    Discuss with provider based on guidance.
+                  </p>
+                </div>
+                <div
+                  class="bg-white border border-gray-100 rounded-lg p-4 md:col-span-2"
+                >
+                  <p
+                    class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-2"
+                  >
+                    Dosage Adjustment
+                  </p>
+                  <p id="clinical-dosage" class="text-sm text-gray-700">-</p>
+                </div>
+                <div
+                  class="bg-white border border-gray-100 rounded-lg p-4 md:col-span-2"
+                >
+                  <p
+                    class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-2"
+                  >
+                    Monitoring
+                  </p>
+                  <p id="clinical-monitoring" class="text-sm text-gray-700">
+                    -
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- JSON Export Panel -->
+          <div
+            id="json-panel"
+            class="bg-pharm-dark rounded-lg shadow-sm overflow-hidden hidden"
+          >
+            <div
+              class="px-4 py-3 flex items-center justify-between border-b border-gray-700"
+            >
+              <div class="flex items-center gap-3">
+                <div class="flex gap-1.5">
+                  <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                </div>
+                <span
+                  class="text-xs text-gray-400 font-mono uppercase tracking-wider"
+                  >EXPORT_DATA_STREAM_JSON</span
+                >
+              </div>
+              <div class="flex items-center gap-3">
+                <button
+                  id="copy-json"
+                  class="text-gray-400 hover:text-white transition-colors"
+                  title="Copy"
+                >
+                  <i class="fa-solid fa-copy text-sm"></i>
+                </button>
+                <button
+                  id="download-json"
+                  class="text-gray-400 hover:text-white transition-colors"
+                  title="Download"
+                >
+                  <i class="fa-solid fa-download text-sm"></i>
+                </button>
+                <button
+                  id="refresh-json"
+                  class="text-gray-400 hover:text-white transition-colors"
+                  title="Refresh"
+                >
+                  <i class="fa-solid fa-arrows-rotate text-sm"></i>
+                </button>
+              </div>
+            </div>
+            <div class="p-4 custom-scrollbar overflow-auto max-h-96">
+              <pre
+                id="json-output"
+                class="text-xs text-green-400 font-mono leading-relaxed"
+              ><code>// Initializing data export sequences...</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer with Trust Indicators -->
+      <footer class="mt-12 pt-8 border-t border-gray-200">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <!-- Data Sources -->
+          <div>
+            <h4
+              class="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2"
+            >
+              <i class="fa-solid fa-shield-halved text-blue-600"></i>
+              Trusted Data Sources
+            </h4>
+            <ul class="text-xs text-gray-600 space-y-1">
+              <li class="flex items-center gap-2">
+                <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                CPIC Guidelines (PharmGKB)
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                FDA Pharmacogenomic Biomarkers
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                ClinVar Variant Database
+              </li>
+            </ul>
+          </div>
+
+          <!-- Privacy & Security -->
+          <div>
+            <h4
+              class="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2"
+            >
+              <i class="fa-solid fa-lock text-blue-600"></i>
+              Privacy & Security
+            </h4>
+            <ul class="text-xs text-gray-600 space-y-1">
+              <li class="flex items-center gap-2">
+                <i class="fa-solid fa-check text-green-500"></i>
+                Local VCF processing only
+              </li>
+              <li class="flex items-center gap-2">
+                <i class="fa-solid fa-check text-green-500"></i>
+                No data stored on servers
+              </li>
+              <li class="flex items-center gap-2">
+                <i class="fa-solid fa-check text-green-500"></i>
+                HIPAA compliant architecture
+              </li>
+            </ul>
+          </div>
+
+          <!-- Version & Updates -->
+          <div>
+            <h4
+              class="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2"
+            >
+              <i class="fa-solid fa-code-branch text-blue-600"></i>
+              Version Information
+            </h4>
+            <ul class="text-xs text-gray-600 space-y-1">
+              <li><strong>Version:</strong> 1.2.0-beta</li>
+              <li><strong>Guidelines Updated:</strong> January 2026</li>
+              <!--<li><strong>Build:</strong> 2026.02.26</li>-->
+            </ul>
+          </div>
+        </div>
+
+        <!-- Copyright -->
+        <div class="text-center pt-6 border-t border-gray-100">
+          <p class="text-xs text-gray-500">
+            © 2026 PharmaGuard Pro. Clinical decisions should be made in
+            consultation with healthcare professionals.
+          </p>
+          <p class="text-xs text-gray-400 mt-1">
+            For research and clinical decision support only. Not a substitute
+            for professional medical advice.
+          </p>
+        </div>
+      </footer>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  </body>
+</html>

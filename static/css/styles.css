@@ -1,0 +1,564 @@
+/* CSS Variables for easy color management */
+:root {
+	--bg-main: #020205;
+	--bg-card: #0a0a0a;
+	--border-color: #2a2a2a;
+	--text-main: #ffffff;
+	--text-muted: #a0a0a0;
+	--cyan-accent: #00eaff;
+	--cyan-accent-dark: #00464d;
+	--green-text: #00e676;
+	--green-badge: #39ff7a;
+	--json-header-bg: #00464d;
+	--font-family: "Inter", sans-serif;
+}
+
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+	letter-spacing: -0.04em;
+	line-height: 1.2em;
+}
+
+body {
+	background-color: var(--bg-main);
+	color: var(--text-main);
+	font-family: var(--font-family);
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
+
+svg {
+	width: 24px;
+	height: 24px;
+}
+
+/* Top Header */
+.top-header {
+	position: sticky;
+	top: 0;
+	text-align: center;
+	padding: 12px;
+	font-size: 20px;
+	font-weight: 500;
+	backdrop-filter: blur(5px);
+}
+
+.container {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	justify-content: center;
+	align-items: center;
+	padding: 20px;
+}
+
+/* Generic Card Styles */
+.card {
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	border: 1px solid var(--border-color);
+	border-radius: 4px;
+	background-color: var(--bg-card);
+	overflow: hidden;
+}
+
+.card-padded {
+	padding: 20px;
+	gap: 20px;
+}
+
+/* Section 1: Data Input */
+.section-title {
+	font-size: 28px;
+	font-weight: 500;
+}
+
+form {
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	align-items: center;
+	justify-content: center;
+}
+
+.input-row {
+	width: -webkit-fill-available;
+	display: flex;
+	gap: 20px;
+}
+
+.input-group {
+	width: -webkit-fill-available;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.select-group {
+	width: 40%;
+}
+
+.input-group label {
+	font-size: 20px;
+	font-weight: 500;
+}
+
+.form-control {
+	background-color: transparent;
+	border: 1px solid var(--border-color);
+	color: var(--text-main);
+	padding: 10px 12px;
+	border-radius: 4px;
+	font-size: 14px;
+	font-family: var(--font-family);
+	outline: none;
+}
+
+.form-control:focus {
+	border-color: var(--cyan-accent);
+}
+
+/* Custom styling for select to make it dark */
+select.form-control {
+	appearance: none;
+	background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+	background-repeat: no-repeat;
+	background-position: right 12px top 50%;
+	background-size: 10px auto;
+}
+select.form-control option {
+	background-color: var(--bg-card);
+	color: var(--text-main);
+}
+
+/* File Upload Area */
+.upload-label {
+	font-size: 20px;
+	font-weight: 500;
+	display: block;
+}
+
+.upload-area {
+	border: 1px dashed var(--border-color);
+	border-radius: 4px;
+	height: 200px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	color: var(--text-muted);
+	cursor: pointer;
+	transition: all 0.3s ease;
+}
+
+.upload-area:hover {
+	background-color: rgba(255, 255, 255, 0.02);
+	border-color: var(--cyan-accent);
+}
+
+.upload-area.drag-over {
+	background-color: rgba(0, 234, 255, 0.1);
+	border-color: var(--cyan-accent);
+	border-style: solid;
+	transform: scale(1.02);
+}
+
+.upload-icon {
+	font-size: 24px;
+
+	color: var(--text-muted);
+}
+
+.upload-text {
+	font-size: 16px;
+	text-align: center;
+	line-height: 1.4;
+}
+
+/* Buttons */
+.btn-primary {
+	background-color: var(--cyan-accent);
+	color: #000000;
+	border: none;
+	width: 100%;
+	padding: 12px;
+	border-radius: 4px;
+	font-size: 20px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: opacity 0.2s;
+}
+
+.btn-primary:hover {
+	opacity: 0.9;
+}
+
+/* Section 2: Results */
+.results-section {
+	background-color: #01120f; /* Slight dark green tint */
+	border-color: #053525; /* Dark green border */
+}
+
+.results-header-area {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+}
+
+.results-title {
+	font-size: 24px;
+	font-weight: 500;
+}
+
+.text-green {
+	color: var(--green-text);
+	font-size: 20px;
+	font-weight: 500;
+}
+
+.badge-container {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 8px;
+}
+
+.badge-container:nth-last-of-type(1) {
+	align-items: flex-end;
+}
+
+.badge-safe {
+	height: 40px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background-color: var(--green-badge);
+	color: #000;
+	padding: 20px;
+	border-radius: 4px;
+	font-size: 20px;
+	font-weight: 600;
+}
+
+.badge-adjust-dosage {
+	height: 40px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background-color: #ff9800;
+	color: #fff;
+	padding: 20px;
+	border-radius: 4px;
+	font-size: 20px;
+	font-weight: 600;
+}
+
+.badge-toxic {
+	height: 40px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background-color: #f44336;
+	color: #fff;
+	padding: 20px;
+	border-radius: 4px;
+	font-size: 20px;
+	font-weight: 600;
+}
+
+.badge-review-required {
+	height: 40px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background-color: #2196f3;
+	color: #fff;
+	padding: 20px;
+	border-radius: 4px;
+	font-size: 20px;
+	font-weight: 600;
+}
+
+.badge-ineffective {
+	height: 40px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background-color: #FF6B6B;
+	color: #fff;
+	padding: 20px;
+	border-radius: 4px;
+	font-size: 20px;
+	font-weight: 600;
+}
+
+.badge-unknown {
+	height: 40px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background-color: #6C757D;
+	color: #fff;
+	padding: 20px;
+	border-radius: 4px;
+	font-size: 20px;
+	font-weight: 600;
+}
+
+.confidence {
+	color: #21b53c;
+}
+
+/* Tabs */
+.tabs {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+.tab-btn {
+	background-color: transparent;
+	color: var(--text-muted);
+	border: 1px solid var(--cyan-accent-dark);
+	padding: 12px;
+	border-radius: 4px;
+	font-size: 20px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.tab-btn.active {
+	background-color: var(--cyan-accent-dark);
+	color: var(--cyan-accent);
+	border-color: var(--cyan-accent-dark);
+}
+
+.tab-btn:hover:not(.active) {
+	border-color: var(--text-muted);
+}
+
+.tab-content {
+	font-size: 22px;
+	line-height: 1.5;
+	color: #eeeeee;
+}
+
+.tab-content p {
+	margin: 10px 0;
+}
+
+.tab-content strong {
+	color: var(--cyan-accent);
+}
+
+.tab-content ul {
+	margin: 10px 0 10px 20px;
+	list-style-type: disc;
+}
+
+.tab-content li {
+	margin: 5px 0;
+}
+
+/* Section 3: JSON Data */
+.json-section {
+	border-color: var(--border-color);
+}
+
+.json-header {
+	background-color: var(--json-header-bg);
+	padding: 20px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	border-bottom: 1px solid var(--border-color);
+	color: var(--cyan-accent);
+	font-weight: 500;
+	font-size: 14px;
+}
+
+.json-title-group {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 20px;
+}
+
+.json-header svg:hover {
+	cursor: pointer;
+	fill: var(--text-main);
+}
+
+.icon-small {
+	font-size: 16px;
+	color: currentColor;
+	cursor: pointer;
+}
+
+.json-content {
+	background-color: var(--bg-card);
+	padding: 20px;
+	min-height: 150px;
+}
+
+.json-content pre {
+	font-family: monospace;
+	font-size: 20px;
+	color: var(--text-main);
+	margin: 0;
+	white-space: pre-wrap;
+}
+
+/* Toast Notification Styles */
+.toast {
+	position: fixed;
+	bottom: 20px;
+	right: 20px;
+	padding: 16px 24px;
+	border-radius: 8px;
+	background-color: #ff4757;
+	color: white;
+	font-size: 14px;
+	font-weight: 500;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-width: 280px;
+	max-width: 400px;
+	animation: slideIn 0.3s ease-out;
+	z-index: 9999;
+}
+
+.toast.error {
+	background-color: #ff4757;
+}
+
+.toast.success {
+	background-color: #2ed573;
+}
+
+.toast.warning {
+	background-color: #ffa502;
+}
+
+.toast-icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 20px;
+}
+
+.toast-message {
+	flex: 1;
+	line-height: 1.4;
+}
+
+@keyframes slideIn {
+	from {
+		transform: translateX(400px);
+		opacity: 0;
+	}
+	to {
+		transform: translateX(0);
+		opacity: 1;
+	}
+}
+
+@keyframes slideOut {
+	from {
+		transform: translateX(0);
+		opacity: 1;
+	}
+	to {
+		transform: translateX(400px);
+		opacity: 0;
+	}
+}
+
+.toast.removing {
+	animation: slideOut 0.3s ease-out forwards;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+	.input-row {
+		grid-template-columns: 1fr;
+	}
+	.results-header-area {
+		flex-direction: column;
+		gap: 16px;
+	}
+	.badge-container {
+		align-items: flex-start;
+	}
+}
+
+/* Alternative Drugs Styling */
+.alternatives-container {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	margin-top: 8px;
+}
+
+.alternative-drug-item {
+	background-color: rgba(0, 234, 255, 0.05);
+	border-left: 3px solid var(--cyan-accent);
+	padding: 12px;
+	border-radius: 4px;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.alternative-drug-item strong {
+	color: var(--cyan-accent);
+	font-size: 16px;
+}
+
+.alternative-drug-item p {
+	font-size: 14px;
+	color: var(--text-muted);
+	margin: 0;
+}
+
+.alternative-drug-item em {
+	color: var(--cyan-accent);
+	font-style: normal;
+	font-weight: 500;
+}
+
+/* Urgency Badge Styling */
+.urgency-badge {
+	display: inline-block;
+	padding: 4px 12px;
+	border-radius: 20px;
+	font-size: 12px;
+	font-weight: 600;
+	text-transform: uppercase;
+}
+
+.urgency-badge.urgency-routine {
+	background-color: rgba(0, 230, 118, 0.2);
+	color: #00e676;
+	border: 1px solid #00e676;
+}
+
+.urgency-badge.urgency-important {
+	background-color: rgba(255, 193, 7, 0.2);
+	color: #ffc107;
+	border: 1px solid #ffc107;
+}
+
+.urgency-badge.urgency-urgent {
+	background-color: rgba(255, 68, 68, 0.2);
+	color: #ff4444;
+	border: 1px solid #ff4444;
+}
