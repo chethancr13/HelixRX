@@ -1,0 +1,42 @@
+# Default ignored files
+/shelf/
+/workspace.xml
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Flask
+*.log
+instance/
+.webassets-cache
+
+# Environment variables
+.env
+.env.local
+
+# Data files - keep essential files, ignore user uploads
+data/uploads/
+data/*.tmp
+data/*_cache/
